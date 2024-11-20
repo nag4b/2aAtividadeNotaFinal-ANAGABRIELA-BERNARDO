@@ -1,0 +1,76 @@
+|<!-- database.php -->
+<?php
+$db = new SQLite3('livraria.db');
+$db->exec("CREATE TABLE IF NOT EXISTS livros (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    titulo TEXT,
+    autor TEXT,
+    ano INTEGER
+)");
+
+<!-- add_book.php -->
+<?php
+include 'database.php';
+if ($_POST) {
+    $titulo = $_POST['titulo'];
+    $autor = $_POST['autor'];
+    $ano = $_POST['ano'];
+    $db->exec("INSERT INTO livros (titulo, autor, ano) VALUES ('$titulo', '$autor', $ano)");
+    header('Location: index.php');
+}
+
+<!-- delete_book.php -->
+<?php
+include 'database.php';
+if (isset($_GET['id'])) {
+    $id = $_GET['id'];
+    $db->exec("DELETE FROM livros WHERE id = $id");
+    header('Location: index.php');
+}
+
+<!-- index.php -->
+<?php include 'database.php'; ?>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Livraria</title>
+    <meta charset="UTF-8">
+    <style>
+        body { margin: 20px; }
+        table { width: 100%; border-collapse: collapse; }
+        td, th { border: 1px solid black; padding: 5px; }
+    </style>
+</head>
+<body>
+    <h2>Adicionar Livro</h2>
+    <form action="add_book.php" method="POST">
+        Título: <input type="text" name="titulo" required><br><br>
+        Autor: <input type="text" name="autor" required><br><br>
+        Ano: <input type="number" name="ano" required><br><br>
+        <input type="submit" value="Adicionar">
+    </form>
+
+    <h2>Livros Cadastrados</h2>
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Título</th>
+            <th>Autor</th>
+            <th>Ano</th>
+            <th>Excluir</th>
+        </tr>
+        <?php
+        $livros = $db->query("SELECT * FROM livros");
+        while ($l = $livros->fetchArray()) {
+            echo "<tr>";
+            echo "<td>" . $l['id'] . "</td>";
+            echo "<td>" . $l['titulo'] . "</td>";
+            echo "<td>" . $l['autor'] . "</td>";
+            echo "<td>" . $l['ano'] . "</td>";
+            echo "<td><a href='delete_book.php?id=" . $l['id'] . "'>Excluir</a></td>";
+            echo "</tr>";
+        }
+        ?>
+    </table>
+</body>
+</html>
